@@ -79,12 +79,9 @@ namespace Fixie.Tests
         {
             //Avoid brittle assertion introduced by fixie version.
             var cleaned = Regex.Replace(actualRawContent, @"\(Fixie \d+\.\d+\.\d+\.\d+\)", @"(Fixie 1.2.3.4)");
-
+            
+            //Avoid brittle assertion introduced by test duration.            
             var decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-
-            //Avoid brittle assertion introduced by test duration.
-            //cleaned = Regex.Replace(cleaned, @"took [\d\.]+ seconds", @"took 1.23 seconds");
-
             cleaned = Regex.Replace(cleaned, @"took [\d\" + decimalSeparator + "]+ seconds", @"took 1.23 seconds");
 
             //Avoid brittle assertion introduced by stack trace line numbers.
