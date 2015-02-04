@@ -7,6 +7,8 @@ using Fixie.Internal;
 
 namespace Fixie.Tests.ConsoleRunner
 {
+    using System.Globalization;
+
     public class ConsoleListenerTests
     {
         public void ShouldReportResultsToTheConsole()
@@ -92,7 +94,8 @@ namespace Fixie.Tests.ConsoleRunner
             var cleaned = Regex.Replace(actualRawContent, @"\(Fixie \d+\.\d+\.\d+\.\d+\)", @"(Fixie 1.2.3.4)");
 
             //Avoid brittle assertion introduced by test duration.
-            cleaned = Regex.Replace(cleaned, @"took [\d\.]+ seconds", @"took 1.23 seconds");
+            var decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            cleaned = Regex.Replace(cleaned, @"took [\d\" + decimalSeparator + "]+ seconds", @"took 1.23 seconds");
 
             //Avoid brittle assertion introduced by stack trace line numbers.
             cleaned = Regex.Replace(cleaned, @":line \d+", ":line #");

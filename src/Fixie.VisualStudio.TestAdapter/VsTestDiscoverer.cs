@@ -8,17 +8,21 @@ using Fixie.Execution;
 
 namespace Fixie.VisualStudio.TestAdapter
 {
+    using System.Diagnostics;
+
     [DefaultExecutorUri(VsTestExecutor.Id)]
     [FileExtension(".exe")]
     [FileExtension(".dll")]
     public class VsTestDiscoverer : ITestDiscoverer
     {
+        
+        
         public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger log, ITestCaseDiscoverySink discoverySink)
         {
             log.Version();
-
+           
             RemotingUtility.CleanUpRegisteredChannels();
-
+            
             foreach (var assemblyPath in sources)
             {
                 try
@@ -26,13 +30,20 @@ namespace Fixie.VisualStudio.TestAdapter
                     if (AssemblyDirectoryContainsFixie(assemblyPath))
                     {
                         log.Info("Processing " + assemblyPath);
+                        ISourceLocationProvider sourceLocationProvider = new SourceLocationProvider();
 
                         using (var environment = new ExecutionEnvironment(assemblyPath))
                         {
                             var methodGroups = environment.DiscoverTestMethodGroups(new Options());
-
+                            //Debugger.Launch();                            
                             foreach (var methodGroup in methodGroups)
-                                discoverySink.SendTestCase(new TestCase(methodGroup.FullName, VsTestExecutor.Uri, assemblyPath));
+                            {                               
+                                var testCase = new TestCase(methodGroup.FullName, VsTestExecutor.Uri, assemblyPath);
+                                var sourceLocation = sourceLocationProvider.GetSourceLocation(assemblyPath, methodGroup.Class, methodGroup.Method);
+                                testCase.CodeFilePath = sourceLocation.Path;
+                                testCase.LineNumber = sourceLocation.LineNumber;                                
+                                discoverySink.SendTestCase(testCase);
+                            }
                         }
                     }
                     else
